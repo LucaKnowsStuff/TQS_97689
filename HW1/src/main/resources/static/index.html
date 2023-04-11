@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Weather Warnings for Portugal districts today</h1>
+<div>
+    <h2>Get all warnings</h2>
+    <button onclick="getAll()" id="all-btn" type="submit">Search</button>
+</div>
+
+<div>
+    <h2>Get all warnings for a specific district</h2>
+    <input id="district-inp" type="text" placeholder="Search..">
+    <button onclick="getDistrict()" id="district-btn" type="submit">Search</button>
+</div>
+<div>
+    <h2>Get all warnings of specific level</h2>
+    <input id="level-inp"  type="text" placeholder="Search..">
+    <button onclick="getLevel()" id="level-btn" type="submit">Search</button>
+</div>
+
+<div>
+    <h2>See cache info</h2>
+    <button onclick="getCache()" id="info-btn"  type="submit">Get cache info</button>
+</div>
+<div>
+    <button onclick="clearAll()" id="clear-btn"  type="submit">Clear All</button>
+</div>
+<div class="cache" id="cache" style="display: none;">
+    <ul>
+        <li>Hits: <span id="hits"></span></li>
+        <li>Misses: <span id="misses"></span></li>
+        <li>Requests: <span id="requests"></span></li>
+    </ul>
+</div>
+
+<script>
+    function getDistrict() {
+        clearScreen("generated-district");
+        const district = document.getElementById("district-inp").value;
+        const URL = "http://localhost:8080/district/" + district;
+        fetch(URL)
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+                data.forEach(warning => {
+                    if(warning.district === "") {
+                        console.log("empty");
+                    }else {
+                        const markup = `<li class = "generated-district">Distrito: ${warning.district} -> Tipo de aviso: ${warning.warningType} -> Nivel de Perigo: ${warning.level}</li>`;
+                        const elem = document.getElementById("district-inp");
+                        elem.insertAdjacentHTML("afterend", markup);
+                    }
+                })
+            })
+    }
+
+
+    function getCache() {
+        let data;
+        const URL = "http://localhost:8080/cache";
+        function setData(dt) {
+            data = dt;
+        }
+
+        fetch(URL)
+            .then(response => response.json()).then( json => setData(json))
+            .catch(error => console.error(error))
+            .finally(() => {
+                document.getElementById("cache").style.display = "block";
+                var hits = document.getElementById('hits');
+                var misses = document.getElementById('misses');
+                var requests = document.getElementById('requests');
+                console.log(data);
+                hits.innerHTML = data.hits;
+                misses.innerHTML = data.misses;
+                requests.innerHTML = data.requests;
+            });
+    }
+
+    function getLevel() {
+        clearScreen("generated-level");
+        const level = document.getElementById("level-inp").value;
+        const URL = "http://localhost:8080/level/" + level;
+        fetch(URL)
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+                data.forEach(warning => {
+                    if(warning.district === "") {
+                        console.log("empty");
+                    }else {
+                        const markup = `<li class="generated-level">Distrito: ${warning.district} -> Tipo de aviso: ${warning.warningType} -> Nivel de Perigo: ${warning.level}</li>`;
+                        const elem = document.getElementById("level-inp");
+                        elem.insertAdjacentHTML("afterend", markup);
+                    }
+                })
+            })
+    }
+    function getAll() {
+        clearScreen("generated-all");
+        const URL = "http://localhost:8080/all";
+        fetch(URL)
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+                data.forEach(warning => {
+                    if(warning.district === "") {
+                        console.log("empty");
+                    }else {
+                        const markup = `<li class="generated-all">Distrito: ${warning.district} -> Tipo de aviso: ${warning.warningType} -> Nivel de Perigo: ${warning.level}</li>`;
+                        const elem = document.getElementById("all-btn");
+                        elem.insertAdjacentHTML("afterend", markup);
+                    }
+                })
+            })
+    }
+    function clearScreen(className) {
+        const elements = document.getElementsByClassName(className);
+        while(elements.length > 0){
+            elements[0].parentNode.removeChild(elements[0]);
+        }
+    }
+    function clearAll() {
+       clearScreen("generated-all");
+       clearScreen("generated-level");
+       clearScreen("generated-district");
+    }
+</script>
+
+
+</body>
+</html>
